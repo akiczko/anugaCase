@@ -13,7 +13,7 @@ A Python library for parsing, processing, and creating domains for ANUGA 2D hydr
 Clone the repo and install as a package:
 
 ```bash
-git clone https://github.com/yourusername/anugaCase.git
+git clone https://github.com/akiczko/anugaCase.git
 cd anugaCase
 pip install .
 ```
