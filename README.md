@@ -1,4 +1,4 @@
-# anugaTools
+# anugaCase
 
 A Python library for parsing, processing, and creating domains for ANUGA 2D hydrodynamic models. It includes geometry tools for handling shapefiles, polylines, and boundaries, as well as utilities for setting up simulation cases with initial conditions, inflows, and boundary tags.
 
@@ -13,8 +13,8 @@ A Python library for parsing, processing, and creating domains for ANUGA 2D hydr
 Clone the repo and install as a package:
 
 ```bash
-git clone https://github.com/yourusername/anugaTools.git
-cd anugaTools
+git clone https://github.com/yourusername/anugaCase.git
+cd anugaCase
 pip install .
 ```
 
@@ -51,7 +51,7 @@ Class for setting up an ANUGA simulation domain.
 
 Example:
 ```python
-from anugaTools.createCaseAnuga import createCase
+from anugaCase.createCaseAnuga import createCase
 
 # Initialize with file paths and parameters
 case = createCase(
