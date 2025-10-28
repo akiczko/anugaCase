@@ -70,11 +70,15 @@ case = createCase(
 # Create the domain (reads files, sets elevation/friction/stage)
 case.createDomain()
 
-# Set boundary conditions
+# Set boundary conditions (outflowVal stands for downstream water level)
 case.setBoundaryConditions(inflowTag="inlet", outflowTag="outlet", outflowVal=150.0)
 
 # Set inflow
 case.setInflowLine(Q=500.0)  # Discharge in m³/s
+
+
+for t in case.domain.evolve(yieldstep=3600,finaltime=3600*24):
+    print(case.domain.timestepping_statistics())
 
 # Now run your ANUGA simulation with case.domain
 ```
