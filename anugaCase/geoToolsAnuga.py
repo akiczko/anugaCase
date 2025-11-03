@@ -14,6 +14,8 @@ from shapely.geometry import LineString, Point, Polygon
 
 from typing import List
 
+import numpy as np
+
 
 def get_bc_masks(BcsPol, updatedBoundary, buffer_distance=0.0):
     """
@@ -336,3 +338,70 @@ def simplify_polygon_coords(coords_list: List[List[float]], tolerance: float = 1
             simplified_coords = list(simplified_poly.exterior.coords)[:-1]  # Remove duplicate last point
             simplified.append(simplified_coords)
     return simplified[0] if len(simplified) == 1 else simplified
+
+def polygonToRaster(poly: List[List[float]], x_min:float,y_min:float, x_max:float,y_max:float,dx:float,dy:float,dType:np.float32) -> np.ndarray:
+    """
+    Convert a polygon to a rasterized binary mask on a regular grid.
+
+    This function takes a polygon defined by a list of coordinate pairs and
+    rasterizes it into a 2D NumPy array where grid cells inside the polygon
+    are set to 1 (or equivalent in the specified dtype) and outside are 0.
+    It uses Matplotlib's Path for containment checks, making it suitable for
+    spatial masking in GIS, image processing, or simulations.
+
+    Parameters
+    ----------
+    poly : List[List[float]]
+        A list of lists representing the polygon's vertices as [[x1, y1], [x2, y2], ..., [xn, yn]].
+        The polygon should ideally be closed (first and last points the same), but Path handles open polygons.
+        Assumes counter-clockwise ordering for proper interior detection.
+    x_min : float
+        The minimum x-coordinate for the grid extent.
+    y_min : float
+        The minimum y-coordinate for the grid extent.
+    x_max : float
+        The maximum x-coordinate for the grid extent.
+    y_max : float
+        The maximum y-coordinate for the grid extent.
+    dx and dy : float
+        The resolution (step size) of the grid in both x and y directions. Smaller values
+        yield higher-resolution rasters but increase computation time and memory usage.
+    dType : type, optional
+        The NumPy data type for the output array (default: np.float32). Common choices include
+        np.int8 or np.bool_ for binary masks, or np.float32 for floating-point values.
+
+    Returns
+    -------
+    np.ndarray
+        A 2D NumPy array where 1 indicates points inside the polygon and 0 outside.
+        Shape is approximately ((y_max - y_min) / grid_size, (x_max - x_min) / grid_size).
+
+    Examples
+    --------
+    >>> square_poly = [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0], [0.0, 0.0]]
+    >>> raster = polygonToRaster(square_poly, -5.0, -5.0, 15.0, 15.0, 1.0, 1.0, np.int8)
+    >>> print(raster.shape)
+    (21, 21)
+
+    Notes
+    -----
+    - For performance with large grids, consider alternatives like rasterio or shapely if needed.
+    - Points on the boundary may vary in inclusion; use contains_points(radius=0) for strict checks if required.
+    - Ensure poly has at least 3 points; add poly.append(poly[0]) if not closed.
+
+    See Also
+    --------
+    matplotlib.path.Path : For advanced path operations.
+    numpy.meshgrid : For understanding grid creation.
+    """
+
+    # dx = grid_size
+    xnew = np.arange(x_min, x_max + dx, dx)
+    ynew = np.arange(y_min, y_max + dy, dy)
+    xx, yy = np.meshgrid(xnew, ynew)
+
+    
+    path = Path(poly)
+    points = np.column_stack((xx.ravel(), yy.ravel()))
+    mask = path.contains_points(points)
+    return mask.reshape(xx.shape).astype(dType)
